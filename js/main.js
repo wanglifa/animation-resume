@@ -12,14 +12,15 @@ var result = `
     transition: all .3s linear;
 }   
 html{
-    background: rgb(222,222,222);
-    font-size: 16px;
+    background: #eee;
 }
 #code{
-    border: 1px solid red;
+    border: 1px solid #aaa;
     padding: 16px;
 }
+
 /*我需要一点代码高亮*/
+
 .token.selector{
     color: #690;
 }
@@ -30,37 +31,39 @@ html{
     color: #DD4A68;
 }
 
-/*加点3D效果*/
+/*加一个呼吸效果*/
+
 #code{
-    transform:rotate(360deg)
+    animation: breath 0.5s infinite alternate-reverse;
 }
-
-
 `
 var result2 = `
-/*不玩了，我来介绍一下我自己*/
-#code{
-    width: 50%;
-    position: fixed;
-    left: 0;
-    height: 100%;
-}
+/*现在正式开始*/
+
 /*我需要一张白纸*/
-#page{
-    position: fixed;
+
+#code-wrapper {
     width: 50%;
-    height: 100%;
-    right: 0;
-    padding: 20px;
-    background: black;
-}
-#content{
-    background: white;
-    padding: 20px;
+    left: 0;
+    position: fixed;
     height: 100%;
 }
+
+/* 于是我就可以在白纸上写字了，请看右边 */
     `
+
 var result3 = `
+/* 接下来用一个优秀的库 marked.js
+ * 把 Markdown 变成 HTML
+ */
+`
+var result4 = `
+/*
+ * 这就是我的会动的简历
+ * 谢谢观看
+ */
+`
+var md = `
 # 自我介绍
 
 我叫王立发
@@ -99,44 +102,67 @@ function writeCode(prevcode,code,fn){
         demoCode.scrollTop = demoCode.scrollHeight;
         if(n>=code.length){
             window.clearInterval(id);
-            fn.call()
+            //如果fn这个参数存在就调用
+            if(fn){
+                fn.call()
+            }
         }
     },50)
 }
-function writeMarkdone(code){
-    let demoCode = document.querySelector('#content');
-    let n = 0;
-    let id = setInterval(()=>{
-        n+=1;
-        demoCode.innerHTML = code.substring(0,n);
-        if(n>=code.length){
-            window.clearInterval(id)
-        }
-    },50)
-}
-writeCode('',result,()=>{ //writeCode call the function在writeCode函数里调用writeCode()里面的function
-    createPage(()=>{
-        writeCode(result,result2,()=>{
-            writeMarkdone(result3)
-        })
-    })
-});
-
 //上面代码执行顺序先调用了writeCode()这个函数，执行它里面的
 //let demoCode = document.querySelector('#code');let n=0;console.log('设置闹钟')；然后设置了一个闹钟
 //也就是定义了一个setInterval函数，但并没有直接执行这个函数，因为他需要10ms后才开始调用，所就直接返回了
 //然后执行f1(),f1函数调用完后，开始执行setInterval函数里面的代码 
 //概括说来就是：1.定闹钟 2.writeCode返回 3.执行f1() 4.闹钟时间到 5.写第一行代码
 
+function writeMarkdone(code,fn){
+    let demoCode = document.querySelector('#content');
+    let n = 0;
+    let id = setInterval(()=>{
+        n+=1;
+        demoCode.innerHTML = code.substring(0,n);
+        demoCode.scrollTop = demoCode.scrollHeight;
+        if(n>=code.length){
+            window.clearInterval(id)
+            fn.call()
+        }
+    },50)
+}
+function creatMarkedoneHtml(fn){
+    let demoCode = document.querySelector('#page');
+    demoCode.removeChild(content)
+    let div = document.createElement('div');
+    demoCode.appendChild(div);
+    div.className= 'html markdown-body';
+    div.innerHTML = marked(md);
+    fn.call()
+}
 //添加一个新的标签
 function createPage(fn){
     console.log('zzz')
-    var page = document.createElement('pre');
-    var content = document.createElement('div');
+    var page = document.createElement('div');
+    var content = document.createElement('pre');
     document.body.appendChild(page);
     page.appendChild(content)
     page.id= 'page';
     content.id = 'content';
     fn.call()
 }
+
+
+writeCode('',result,()=>{ //writeCode call the function在writeCode函数里调用writeCode()里面的function
+    createPage(()=>{
+        writeCode(result,result2,()=>{
+            writeMarkdone(md,()=>{
+                writeCode(result+result2,result3,()=>{
+                    creatMarkedoneHtml(()=>{
+                        writeCode(result+result2+result3,result4)
+                    })
+                })
+            })
+        })
+    })
+});
+
+
 
