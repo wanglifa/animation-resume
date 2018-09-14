@@ -34,59 +34,109 @@ html{
 #code{
     transform:rotate(360deg)
 }
-/*不玩了，我来介绍一下我自己*/
-/*我需要一张白纸*/
+
 
 `
-var n=0;
-var id = setInterval(()=>{
-    n+=1;
-    code.innerHTML=result.substring(0,n)
-    //将你页面的html代码高亮，然后赋值给html
-    code.innerHTML = Prism.highlight(code.innerHTML, Prism.languages.css, 'css');
-    styleTag.innerHTML = result.substring(0,n)
-    if(n>=result.length){
-        window.clearInterval(id);
-        //在css动画结束后，执行f1创建一个新的标签
-        f1()
-        
-        //将之前的innerHTML传给f2这个函数
-        f2(code.innerHTML)
-    }
-},10)
-
-//添加一个新的标签
-function f1(){
-    var page = document.createElement('div');
-    document.body.appendChild(page);
-    page.id= 'page';
+var result2 = `
+/*不玩了，我来介绍一下我自己*/
+#code{
+    width: 50%;
+    position: fixed;
+    left: 0;
+    height: 100%;
 }
-
-//给新创建的标签设置css和innerHTML
-function f2(prevInnerhtml){
-    var result = `
+/*我需要一张白纸*/
 #page{
-    width: 100px;
-    height: 100px;
-    background: red;
+    position: fixed;
+    width: 50%;
+    height: 100%;
+    right: 0;
+    padding: 20px;
+    background: black;
+}
+#content{
+    background: white;
+    padding: 20px;
+    height: 100%;
 }
     `
-    var n = 0;
-    var id = setInterval(()=>{
+var result3 = `
+# 自我介绍
+
+我叫王立发
+1995年7月出生
+山东轻工职业学院毕业
+自学前端一年半
+希望应聘前端开发岗位
+
+# 技能介绍
+
+熟悉Javascript CSS Sass Bootstarp jQuery Vue
+
+# 项目介绍
+
+1. 轮播
+2. 简历
+3. 画板
+
+# 联系方式
+
+QQ：1002325418
+微信：m18182518
+手机：15806553882
+`    
+//prevcode参数是上一次的代码，为了不覆盖之前的代码，也就是为了和上一次的结果累加    
+function writeCode(prevcode,code,fn){
+    let demoCode = document.querySelector('#code');
+    //一开始页面的innerHTML是你传入的上一次的或者是空
+    demoCode.innerHTML = prevcode || '';
+    let n=0;
+    let id = setInterval(()=>{
         n+=1;
-        //这里因为是在原先的innerHTML的基础上添加，所以每次都只能加一个，而不能像之前那样覆盖，所以是(n-1,n)
-        code.innerHTML+=result.substring(n-1,n)
-        //code.innerHTML = Prism.highlight(code.innerHTML, Prism.languages.css, 'css');
-        //如果写成上面这个会出问题，因为之前的code里的innerHTML已经高亮了，已经加了span标签，
-        //如果再加一遍会出问题，所以要排除之前高亮的代码，也就是说只需要对这个函数里的result进行高亮就可以
-        
-        //又因为是直接赋值给code.innerHTML在页面展示，所以之前的innerHTML也得加上，
-        //故给f2这个函数传入一个参数，在调用的时候将上一次的code.innerHTML传进去
-        code.innerHTML = prevInnerhtml+ Prism.highlight(result, Prism.languages.css, 'css');
-        styleTag.innerHTML += result.substring(n-1,n)
-        if(n>=result.length){
+        //将你页面的html代码高亮，然后赋值给html
+        demoCode.innerHTML = Prism.highlight(prevcode + code.substring(0,n), Prism.languages.css, 'css');
+        styleTag.innerHTML = prevcode + code.substring(0,n)
+        demoCode.scrollTop = demoCode.scrollHeight;
+        if(n>=code.length){
+            window.clearInterval(id);
+            fn.call()
+        }
+    },50)
+}
+function writeMarkdone(code){
+    let demoCode = document.querySelector('#content');
+    let n = 0;
+    let id = setInterval(()=>{
+        n+=1;
+        demoCode.innerHTML = code.substring(0,n);
+        if(n>=code.length){
             window.clearInterval(id)
         }
-    },10)
-
+    },50)
 }
+writeCode('',result,()=>{ //writeCode call the function在writeCode函数里调用writeCode()里面的function
+    createPage(()=>{
+        writeCode(result,result2,()=>{
+            writeMarkdone(result3)
+        })
+    })
+});
+
+//上面代码执行顺序先调用了writeCode()这个函数，执行它里面的
+//let demoCode = document.querySelector('#code');let n=0;console.log('设置闹钟')；然后设置了一个闹钟
+//也就是定义了一个setInterval函数，但并没有直接执行这个函数，因为他需要10ms后才开始调用，所就直接返回了
+//然后执行f1(),f1函数调用完后，开始执行setInterval函数里面的代码 
+//概括说来就是：1.定闹钟 2.writeCode返回 3.执行f1() 4.闹钟时间到 5.写第一行代码
+
+//添加一个新的标签
+function createPage(fn){
+    console.log('zzz')
+    var page = document.createElement('pre');
+    var content = document.createElement('div');
+    document.body.appendChild(page);
+    page.appendChild(content)
+    page.id= 'page';
+    content.id = 'content';
+    fn.call()
+}
+
