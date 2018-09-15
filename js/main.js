@@ -100,6 +100,7 @@ function writeCode(prevcode,code,fn){
         demoCode.innerHTML = Prism.highlight(prevcode + code.substring(0,n), Prism.languages.css, 'css');
         styleTag.innerHTML = prevcode + code.substring(0,n)
         demoCode.scrollTop = demoCode.scrollHeight;
+        //因为还是取你传入的code的第0到n个，所以n还是不能大于等于code.length
         if(n>=code.length){
             window.clearInterval(id);
             //如果fn这个参数存在就调用
